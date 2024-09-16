@@ -1,6 +1,6 @@
 import express from "express";
 import {singleAvatar} from '../middlewares/multer.js'
-import {getMyProfile, login,logout,newUser} from '../controllers/user.controller.js'
+import {getMyProfile, login,logout,newUser, searchUser} from '../controllers/user.controller.js'
 import { isAuthenticated } from "../middlewares/auth.js";
 
 const app = express.Router();
@@ -13,5 +13,6 @@ app.use(isAuthenticated);//This ensures below this line every route isAuthentica
 
 app.get('/my',getMyProfile);
 app.get('/logout',logout);
+app.get('/search',searchUser);
 
 export default app;
