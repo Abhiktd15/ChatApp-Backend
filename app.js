@@ -18,7 +18,7 @@ const PORT = 3000 || process.env.PORT;
 
 connectDB(MONGODB_URI);
 
-createUser(10);
+// createUser(10);
 
 const app = express();
 
