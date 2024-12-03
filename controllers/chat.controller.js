@@ -1,3 +1,4 @@
+import { json } from "express";
 import { ALERT, NEW_ATTACHMENTS, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js";
 import { getOtherMember } from "../lib/helper.js";
 import { TryCatch } from "../middlewares/error.js"
@@ -392,19 +393,25 @@ const getMessages = TryCatch(async (req,res,next) => {
     const chatId = req.params.id;
 
     const {page =1 } = req.query;
-    const limit = 20;
-    const skip = (page-1) * limit;
+    const resultPerPage = 20;
+    const skip = (page-1) * resultPerPage;
 
     const [messages,totolMessagesCount] = await Promise.all([
         Message.find({chat:chatId})
             .sort({createdAt: -1})
             .skip(skip)
-            .limit(limit)
+            .limit(resultPerPage)
             .populate("sender","name avatar")
             .lean(),
             Message.countDocuments({chat:chatId})
     ])
-    const totalPages = 
+    const totalPages = Math.ceil(totolMessagesCount/resultPerPage) || 0
+    
+    return res.status(200).json({
+        success: true,
+        messages: messages.reverse(),
+        totalPages
+    })
 })
 
 export {

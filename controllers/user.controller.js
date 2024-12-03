@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Chat } from "../models/chat.model.js";
 import { cookieOptions, sendToken } from "../utils/features.js";
 import bcryptjs from 'bcryptjs'
 import { ErrorHandler } from "../utils/utility.js";
@@ -27,19 +28,19 @@ const newUser = async (req, res) => {
 // login user
 
 const login = TryCatch(async (req, res, next) => {
-        const { username, password } = req.body;
-    
-        const user = await User.findOne({ username }).select("+password");
-    
-        if (!user) 
-            return next(new ErrorHandler("Invalid Username or Password",404));
-        const isMatch = await bcryptjs.compare(password, user.password);
+    const { username, password } = req.body;
 
-        if (!isMatch)
-            return next(new ErrorHandler("Invalid Username or Password", 404));
+    const user = await User.findOne({ username }).select("+password");
 
-        sendToken(res, user, 200, `Welcome Back, ${user.name}`);
-    });
+    if (!user) 
+        return next(new ErrorHandler("Invalid Username or Password",404));
+    const isMatch = await bcryptjs.compare(password, user.password);
+
+    if (!isMatch)
+        return next(new ErrorHandler("Invalid Username or Password", 404));
+
+    sendToken(res, user, 200, `Welcome Back, ${user.name}`);
+});
 
 //find profile 
 const getMyProfile = TryCatch(async (req,res) => {
@@ -64,6 +65,10 @@ const logout = TryCatch(async (req,res) => {
 const searchUser = TryCatch(async (req,res) => {
     
     const {name} = req.query;
+    const myChats = await Chat.find({
+        groupChat: false
+    })
+    
 
     return res
     .status(200)
