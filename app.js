@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser'
 import userRoute from './routes/user.routes.js';
 import chatRoute from './routes/chat.routes.js';
 import { createUser } from './seeders/user.seed.js';
-import { createGroupChats, createMessagesInAChat } from './seeders/chat.seed.js';
+import { createGroupChats, createMessagesInAChat, createSingleChats } from './seeders/chat.seed.js';
 
 
 dotenv.config({
@@ -22,7 +22,7 @@ connectDB(MONGODB_URI);
 // createUser(10);
 // createGroupChats(10);
 // createMessagesInAChat("674f16c7219fb20409489c0d",50)
-
+// createSingleChats(10)
 
 const app = express();
 
