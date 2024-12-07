@@ -5,10 +5,11 @@ import { cookieOptions, emitEvent, sendToken } from "../utils/features.js";
 import bcryptjs from 'bcryptjs'
 import { ErrorHandler } from "../utils/utility.js";
 import { errorMiddleware, TryCatch } from "../middlewares/error.js";
-import { NEW_REQUEST } from "../constants/events.js";
+import { NEW_REQUEST, REFETCH_CHATS } from "../constants/events.js";
+import { getOtherMember } from "../lib/helper.js";
 
 //create a new user and save it to the database and save in the cookie
-const newUser = async (req, res) => {
+const newUser = async (req, res,next) => {
     const {name,username,password,bio} = req.body;
 
     const avatar = {
@@ -45,14 +46,16 @@ const login = TryCatch(async (req, res, next) => {
 });
 
 //find profile 
-const getMyProfile = TryCatch(async (req,res) => {
+const getMyProfile = TryCatch(async (req,res,next) => {
     const user = await User.findById(req.user);
-
+    if(!user) 
+        return next(new ErrorHandler("User not found", 404));
     res.status(200).json({
         status: true,
         user
     })
 })
+
 const logout = TryCatch(async (req,res) => {
     //remove saved cookie 
     return res
@@ -64,7 +67,7 @@ const logout = TryCatch(async (req,res) => {
     });
 });
 
-const searchUser = TryCatch(async (req,res) => {
+const searchUser = TryCatch(async (req,res,next) => {
     
     const {name = ""} = req.query;
     const myChats = await Chat.find({
@@ -124,7 +127,7 @@ const sendFriendRequest = TryCatch(async (req,res,next) => {
     });
 });
 
-const acceptFriendRequest = TryCatch(async (req,res) => {
+const acceptFriendRequest = TryCatch(async (req,res,next) => {
     const {requestId,accept} = req.body;
 
     const request = await Request.findById(requestId).populate("sender","name").populate("receiver","name")
@@ -133,7 +136,7 @@ const acceptFriendRequest = TryCatch(async (req,res) => {
         return next(new ErrorHandler("Invalid Request",404));
     }
 
-    if(request.receiver.toString() !== req.user.toString()){
+    if(request.receiver._id.toString() !== req.user.toString()){
         return next(new ErrorHandler("You are not authorized to accept this request",401));
     }
 
@@ -168,16 +171,18 @@ const acceptFriendRequest = TryCatch(async (req,res) => {
     });
 })
 
-const getAllNotifications = TryCatch(async (req,res) => {
+const getMyNotifications = TryCatch(async (req,res,next) => {
     const requests = await Request.find({
         receiver : req.user
     }).populate("sender","name avatar")
 
     const allRequests = requests.map(({_id,sender}) => ({
         _id,
-        senderId: sender._id,
-        name: sender.name,
-        avatar: sender.avatar.url
+        sender:{
+            senderId: sender._id,
+            name: sender.name,
+            avatar: sender.avatar.url
+        }
     }))
 
     return res.status(200).json({
@@ -187,5 +192,44 @@ const getAllNotifications = TryCatch(async (req,res) => {
 
 })
 
+const getMyFriends = TryCatch(async (req,res,next) => {
 
-export { newUser, login, getMyProfile,logout,searchUser,sendFriendRequest,acceptFriendRequest ,getAllNotifications};
+    const chatId = req.query.chatId;
+
+    const chats = await Chat.find({
+        members: req.user,
+        groupChat : false
+    }).populate("members","name avatar")
+    const friends = chats.map(({members}) => {
+        const otherUser = getOtherMember(members,req.user);
+
+        return {
+            _id: otherUser._id,
+            name: otherUser.name,
+            avatar: otherUser.avatar.url
+        }
+    })
+
+    if(chatId){
+        const chat = await Chat.findById(chatId)
+        const availableFriends = friends.filter((friend) => !chat.members.includes(friend._id))
+
+        return res.status(200).json({
+            success: true,
+            friends: availableFriends,
+        })
+
+    }
+    else{
+        return res.status(200).json({
+            success: true,
+            friends,
+        })
+    }
+
+    
+
+})
+
+
+export { newUser, login, getMyProfile,logout,searchUser,sendFriendRequest,acceptFriendRequest ,getMyNotifications,getMyFriends};

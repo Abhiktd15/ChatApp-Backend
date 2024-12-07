@@ -1,6 +1,6 @@
 import express from "express";
 import {singleAvatar} from '../middlewares/multer.js'
-import {getMyProfile, login,logout,newUser, searchUser,sendFriendRequest,acceptFriendRequest, getAllNotifications} from '../controllers/user.controller.js'
+import {getMyProfile, login,logout,newUser, searchUser,sendFriendRequest,acceptFriendRequest, getMyNotifications, getMyFriends} from '../controllers/user.controller.js'
 import { isAuthenticated } from "../middlewares/auth.js";
 import { acceptRequestValidator, registerValidator,  sendRequestValidator, validateHandler, validateLogin } from "../lib/validator.js";
 
@@ -18,6 +18,8 @@ app.get('/search',searchUser);
 
 app.put('/send-request',sendRequestValidator(),validateHandler,sendFriendRequest);
 app.put('/accept-request',acceptRequestValidator(),validateHandler,acceptFriendRequest);
-app.get('/notifications',getAllNotifications);
+app.get('/notifications',getMyNotifications);
+app.get('/friends',getMyFriends);
+
 
 export default app;
