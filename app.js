@@ -17,6 +17,7 @@ dotenv.config({
 });
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = 3000 || process.env.PORT;
+export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "674f16c7219fb20409489c0d"
 
 connectDB(MONGODB_URI);
 
