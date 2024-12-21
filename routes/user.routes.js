@@ -12,7 +12,7 @@ app.post("/login",validateLogin(),validateHandler, login);
 //After her user must be logged in to access the routes
 app.use(isAuthenticated);//This ensures below this line every route isAuthenticated 
 
-app.get('/my',getMyProfile);
+app.get('/me',getMyProfile);
 app.get('/logout',logout);
 app.get('/search',searchUser);
 

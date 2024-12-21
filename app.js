@@ -5,7 +5,10 @@ import { connectDB } from './utils/features.js';
 import { errorMiddleware } from './middlewares/error.js';
 import cookieParser from 'cookie-parser'
 import { Server } from 'socket.io';
+import cors from 'cors'
 import { v4 as uuid } from 'uuid';
+
+import {v2 as cloudinary} from "cloudinary"
 
 import userRoute from './routes/user.routes.js';
 import chatRoute from './routes/chat.routes.js';
@@ -29,10 +32,11 @@ const userSocketIDs = new Map();
 
 connectDB(MONGODB_URI);
 
-// createUser(10);
-// createGroupChats(10);
-// createMessagesInAChat("674f16c7219fb20409489c0d",50)
-// createSingleChats(10)
+cloudinary.config({
+    cloud_name : process.env.CLOUDINARY_CLOUD_NAME,
+    api_key : process.env.CLOUDINARY_API_KEY,
+    api_secret : process.env.CLOUDINARY_SECRET_KEY
+})
 
 const app = express();
 const server = createServer(app)
@@ -41,10 +45,14 @@ const io = new Server(server,{})
 //Using Middlewares here
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+    origin:["http://localhost:5173","http://localhost:4173",process.env.CLIENT_URL],
+    credentials:true,
+}))
 
-app.use('/user',userRoute);
-app.use('/chat',chatRoute);
-app.use('/admin',adminRoute);
+app.use('/api/v1/user',userRoute);
+app.use('/api/v1/chat',chatRoute);
+app.use('/api/v1/admin',adminRoute);
 
 
 app.get('/', function(req, res){
