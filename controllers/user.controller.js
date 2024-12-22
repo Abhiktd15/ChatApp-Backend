@@ -125,7 +125,6 @@ const sendFriendRequest = TryCatch(async (req,res,next) => {
 
     return res
     .status(200)
-    .cookie("chatapp-token","",{...cookieOptions,maxAge:0})
     .json({
         success: true,
         message: "Request Send Successfully",
@@ -181,10 +180,12 @@ const getMyNotifications = TryCatch(async (req,res,next) => {
         receiver : req.user
     }).populate("sender","name avatar")
 
+    
+
     const allRequests = requests.map(({_id,sender}) => ({
         _id,
         sender:{
-            senderId: sender._id,
+            _id: sender._id,
             name: sender.name,
             avatar: sender.avatar.url
         }
