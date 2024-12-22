@@ -84,12 +84,11 @@ io.on("connection" ,(socket) => {
         }
         const messageForDB = {
             content: message,
-            senderId: user._id,
-            chatId,        
+            sender: user._id,
+            chat:chatId,        
         }
 
         const membersSocket  = getSockets(members)
-
         io.to(membersSocket).emit(NEW_MESSAGE,{
             chatId,
             message:messageForRealTime
@@ -98,11 +97,13 @@ io.on("connection" ,(socket) => {
 
         try {
             await  Message.create(messageForDB)
+            console.log("messgae created")
         } catch (error) {
             console.error(error)
         }
 
         console.log("New Message",messageForRealTime)
+        console.log("New Message",messageForDB)
     })
 
     socket.on("disconnect" ,() =>{
